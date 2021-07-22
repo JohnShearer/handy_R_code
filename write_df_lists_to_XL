@@ -1,0 +1,32 @@
+writeList_xlsx <- function(x, file, beside = TRUE, sheetNamePrefix = "Sheet"){
+  xnames <- names(x)
+  shNames <- paste0(sheetNamePrefix, seq_along(x))
+  if(is.null(xnames)) xnames <- shNames
+  if(any(xnames == "")){
+    xnames[xnames == ""] <- shNames[xnames == ""]
+  }
+  wb <- createWorkbook(type = "xlsx")
+  if(beside){
+    sheet <- createSheet(wb, sheetName = shNames[1])
+    row <- createRow(sheet, rowIndex = 1)
+    col <- 0
+    for(i in seq_along(x)){
+      col <- col + 1
+      cell <- createCell(row, colIndex = col)
+      setCellValue(cell[[1, 1]], xnames[i])
+      col <- col + 2
+      addDataFrame(x[[i]], sheet, 
+                   startRow = 1, startColumn = col,
+                   row.names = FALSE)
+      col <- col + ncol(x[[i]])
+    }
+  }else{
+    for(i in seq_along(x)){
+      sheet <- createSheet(wb, sheetName = xnames[i])
+      addDataFrame(x[[i]], sheet, row.names = FALSE)
+    }
+  }
+  if(!grepl("\\.xls", file)) file <- paste0(file, ".xlsx")
+  saveWorkbook(wb, file = file)
+}
+
